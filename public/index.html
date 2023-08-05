@@ -185,6 +185,7 @@
         }
 
         function sendMessage() {
+            load(true, '.send div', '.send span', 'Send')
             if (input.value) {
                 socket.emit(
                     'chat message',
@@ -192,6 +193,7 @@
                     localStorage.getItem('username')
                 )
                 input.value = ''
+                load(false, '.send div', '.send span', 'Send')
             }
         }
 
