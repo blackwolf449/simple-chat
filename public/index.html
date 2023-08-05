@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+        <style>
+            body {
+                margin: 0;
+                padding-bottom: 3rem;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Helvetica, Arial, sans-serif;
+            }
+
+            #form {
+                background: rgba(0, 0, 0, 0.15);
+                padding: 0.25rem;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                height: 3rem;
+                box-sizing: border-box;
+                backdrop-filter: blur(10px);
+            }
+            #input {
+                border: none;
+                padding: 0 1rem;
+                flex-grow: 1;
+                border-radius: 2rem;
+                margin: 0.25rem;
+            }
+            #input:focus {
+                outline: none;
+            }
+            #form > button {
+                background: #333;
+                border: none;
+                padding: 0 1rem;
+                margin: 0.25rem;
+                border-radius: 3px;
+                outline: none;
+                color: #fff;
+            }
+
+            #messages {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+            #messages > li {
+                padding: 0.5rem 1rem;
+            }
+            #messages > li:nth-child(odd) {
+                background: #efefef;
+            }
+            .hide {
+                display: none;
+            }
+            .login-form {
+                width: 200px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                border: 1px solid gray;
+                padding: 20px;
+                margin: 0 auto;
+                margin-top: 30px;
+                border-radius: 5px;
+            }
+            .login-form > hr {
+                width: 90%;
+            }
+            .login-form > button {
+                border: 1px solid gray;
+                background-color: white;
+                border-radius: 5px;
+                cursor: pointer;
+                padding: 5px;
+            }
+            .login-form > a {
+                text-decoration: underline;
+                color: blue;
+                margin: 0 auto;
+                cursor: pointer;
+            }
+            .login-form:hover {
+                color: rgb(0, 26, 255);
+            }
+            .loading {
+                width: 10px;
+                height: 10px;
+                border-bottom: 3px solid gray;
+                border-top: 3px solid gray;
+                margin: 0 auto;
+                animation: load 300ms ease-in-out infinite;
+            }
+            @keyframes load {
+                0% {
+                    rotate: 0deg;
+                }
+                50% {
+                    rotate: 90deg;
+                }
+                100% {
+                    rotate: 180deg;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-form">
+            <input type="text" name="username" placeholder="Username" />
+            <input type="password" name="password" placeholder="Password" />
+            <button class="auth">
+                <div class=""></div>
+                <span>Login</span>
+            </button>
+            <hr />
+            <a class="register"> first time? </a>
+        </div>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        localStorage.setItem('username', '')
+        let socket = io()
+        let loginBtn = document.querySelector('.auth')
+        let form = ''
+        let input = ''
+        let send = ''
+        const message = `<ul id="messages"></ul>
+            <div id="form" action="">
+                <input id="input" autocomplete="off" /><button class="send"><div></div><span>Send<span></button>
+            </div>`
+
+        loginBtn.onclick = async () => {
+            await auth()
+        }
+
+        function load(onOff, selectDIV, selectText, text) {
+            const loading = document.querySelector(selectDIV)
+            const textBtn = document.querySelector(selectText)
+            if (!onOff) {
+                textBtn.innerText = text
+                loading.classList.remove('loading')
+                return
+            }
+            textBtn.innerText = ''
+            loading.classList.add('loading')
+            return
+        }
+
+        async function auth() {
+            load(true, '.auth > div', '.auth > span', 'Login')
+            const username = document.querySelector('input[name="username"]')
+            const password = document.querySelector('input[name="password"]')
+            const response = await fetch(`http://localhost:3000/user/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username.value,
+                    password: password.value,
+                }),
+            })
+            if (response.status != 200) {
+                load(false, '.auth > div', '.auth > span', 'Login')
+                alert(
+                    'Error: ' +
+                        response.status +
+                        '\nUsername ou password incorrect'
+                )
+                return
+            }
+            load(false, '.auth > div', '.auth > span', 'Login')
+            localStorage.setItem('username', username.value)
+            const body = document.querySelector('body')
+            body.innerHTML = message
+            form = document.getElementById('form')
+            input = document.getElementById('input')
+            send = document.querySelector('.send')
+            send.onclick = () => {
+                sendMessage()
+            }
+        }
+
+        function sendMessage() {
+            if (input.value) {
+                socket.emit(
+                    'chat message',
+                    input.value,
+                    localStorage.getItem('username')
+                )
+                input.value = ''
+            }
+        }
+
+        socket.on('error', function () {
+            alert('algo deu errado com o seu login')
+            window.location.reload()
+        })
+
+        socket.on('chat message', function (msg) {
+            let item = document.createElement('li')
+            item.textContent = msg
+            messages.appendChild(item)
+            window.scrollTo(0, document.body.scrollHeight)
+        })
+    </script>
+</html>
