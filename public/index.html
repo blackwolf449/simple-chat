@@ -155,6 +155,11 @@
             return
         }
 
+        async function newUser() {
+            const username = document.querySelector('input[name="username"]')
+            const password = document.querySelector('input[name="password"]')
+        }
+
         async function auth() {
             load(true, '.auth > div', '.auth > span', 'Login')
             const username = document.querySelector('input[name="username"]')

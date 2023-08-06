@@ -9,6 +9,8 @@ const User = mongoose.model(
 )
 
 export async function create(username, password) {
+    const userExist = await User.find({ name: username })
+    if (userExist.length > 0) return 400
     const user = new User(username, password)
     await user.save()
     return user
