@@ -39,15 +39,11 @@ app.post('/user', async (req, res) => {
 })
 
 app.post('/new-user', async (req, res) => {
-    try {
-        const newUser = await create(req.body.username, req.body.password)
-        if (newUser == 400) {
-            res.status(400).json({ message: 'User already exists' })
-        } else {
-            res.status(200).json(newUser)
-        }
-    } catch (e) {
-        res.status(400).json({ message: e })
+    const newUser = await create(req.body.username, req.body.password)
+    if (newUser == 400) {
+        res.status(400).json({ message: 'User already exists' })
+    } else {
+        res.status(200).json(newUser)
     }
 })
 

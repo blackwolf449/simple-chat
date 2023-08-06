@@ -116,8 +116,12 @@
             </div>
             <div class="register-form">
                 <h1>Register</h1>
-                <input type="text" name="username" placeholder="Username" />
-                <input type="password" name="password" placeholder="Password" />
+                <input type="text" name="usernameNew" placeholder="Username" />
+                <input
+                    type="password"
+                    name="passwordNew"
+                    placeholder="Password"
+                />
                 <button class="reg">
                     <div></div>
                     <span>Register</span>
@@ -130,6 +134,7 @@
         localStorage.setItem('username', '')
         let socket = io()
         let loginBtn = document.querySelector('.auth')
+        const regBtn = document.querySelector('.reg')
         let form = ''
         let input = ''
         let send = ''
@@ -140,6 +145,10 @@
 
         loginBtn.onclick = async () => {
             await auth()
+        }
+
+        regBtn.onclick = async () => {
+            await newUser()
         }
 
         function load(onOff, selectDIV, selectText, text) {
@@ -156,8 +165,28 @@
         }
 
         async function newUser() {
-            const username = document.querySelector('input[name="username"]')
-            const password = document.querySelector('input[name="password"]')
+            load(true, '.reg > div', '.reg > span', 'Register')
+            const username = document.querySelector('input[name="usernameNew"]')
+            const password = document.querySelector('input[name="passwordNew"]')
+            const response = await fetch('http://localhost:3000/new-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username.value,
+                    password: password.value,
+                }),
+            })
+            if (response.status != 200) {
+                load(false, '.reg > div', '.reg > span', 'Register')
+                alert('Error: ' + response.status + '\nAlgo deu errado')
+                return
+            }
+            username.value = ''
+            password.value = ''
+            alert('Conta criada')
+            load(false, '.reg > div', '.reg > span', 'Register')
         }
 
         async function auth() {
