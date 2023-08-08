@@ -15,15 +15,12 @@ const __dirname = path.dirname(__filename)
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use(express.static('public'))
 const server = http.createServer(app)
 const io = new Server(server)
 connect()
 
 dotenv.config()
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html')
-})
 
 app.post('/user', async (req, res) => {
     try {
